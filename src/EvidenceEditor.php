@@ -32,8 +32,11 @@ final class EvidenceEditor extends Component
 
     public string $subjectPersonId = '';
 
+    public string $status = 'draft';
+
     public function save(CreateEvidenceRecord $create): void
     {
+        abort_unless(auth()->check(), 403);
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'kind' => ['required', 'in:'.implode(',', EvidenceRecord::KINDS)],
@@ -46,6 +49,7 @@ final class EvidenceEditor extends Component
             'sourceUrl' => ['nullable', 'url', 'max:2048'],
             'eventDate' => ['nullable', 'date'],
             'subjectPersonId' => ['nullable', 'uuid'],
+            'status' => ['required', 'in:'.implode(',', EvidenceRecord::STATUSES)],
         ]);
         $create->execute([
             'name' => $this->name,
@@ -59,6 +63,7 @@ final class EvidenceEditor extends Component
             'source_url' => $this->sourceUrl ?: null,
             'event_date' => $this->eventDate ?: null,
             'subject_person_id' => $this->subjectPersonId ?: null,
+            'status' => $this->status,
         ]);
         $this->reset();
         $this->dispatch('evidence-record-created');
@@ -66,6 +71,8 @@ final class EvidenceEditor extends Component
 
     public function render(): mixed
     {
+        abort_unless(auth()->check(), 403);
+
         return view('genealogy-evidence-livewire::editor', ['kinds' => EvidenceRecord::KINDS]);
     }
 }
